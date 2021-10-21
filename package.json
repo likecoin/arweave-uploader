@@ -1,0 +1,32 @@
+{
+  "name": "iscn-arweave-uploader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "git+https://github.com/likecoin/iscn-arweave-uploader.git",
+  "keywords": [],
+  "author": "Wei-Jun Hung <weijunhung@outlook.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/likecoin/iscn-arweave-uploader/issues"
+  },
+  "homepage": "https://github.com/likecoin/iscn-arweave-uploader#readme",
+  "dependencies": {
+    "arweave": "^1.10.18",
+    "csv-parse": "^4.16.3",
+    "csv-stringify": "^5.6.5",
+    "file-type": "^16.5.3",
+    "ipfs-http-client": "^53.0.1",
+    "ipfs-only-hash": "^4.0.0",
+    "it-all": "^1.0.6",
+    "uint8arrays": "^3.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.1",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.25.2"
+  }
+}
