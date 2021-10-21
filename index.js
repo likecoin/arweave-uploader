@@ -7,6 +7,7 @@ const { create } = require('ipfs-http-client');
 const all = require('it-all');
 const { concat } = require('uint8arrays/concat');
 const { fromBuffer } = require('file-type');
+const MimeTypes = require('mime-types');
 
 const jwk = require('./jwk.json');
 
@@ -60,6 +61,14 @@ async function getFileBuffer(filename, ipfsHash) {
     return loadFileFromIPFS(ipfsHash);
   }
   return new Error(`Cannot get ${filename}`);
+
+async function getMimeAndExt(filename, buffer) {
+  if (verifyLocalFile(filename)) {
+    const mime = MimeTypes.lookup(`upload/${filename}`);
+    return { mime };
+  }
+  const { mime, ext } = await fromBuffer(buffer);
+  return { mime, ext };
 }
 
 async function run() {
@@ -93,7 +102,7 @@ async function run() {
         }
       }
 
-      const { ext, mime } = await fromBuffer(buffer);
+      const { mime, ext } = await getMimeAndExt(filename, buffer);
       const tx = await createTx(buffer, mime, data[ipfsHashIndex]);
       await signAndPostTx(tx);
       const { id: arHash } = tx;
