@@ -48,19 +48,19 @@ async function loadFileFromIPFS(ipfsHash) {
   try {
     return concat(await all(ipfs.cat(ipfsHash)));
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(`Cannot get file from IPFS: ${ipfsHash}`);
-    throw error;
+    throw new Error(`Cannot get file from IPFS: ${ipfsHash}`);
   }
 }
 
 async function getFileBuffer(filename, ipfsHash) {
   if (verifyLocalFile(filename)) {
     return loadFileFromLocal(`upload/${filename}`);
-  } if (ipfsHash) {
+  }
+  if (ipfsHash) {
     return loadFileFromIPFS(ipfsHash);
   }
-  return new Error(`Cannot get ${filename}`);
+  throw new Error(`Cannot get ${filename}`);
+}
 
 async function getMimeAndExt(filename, buffer) {
   if (verifyLocalFile(filename)) {
@@ -90,14 +90,12 @@ async function run() {
     const data = [...input[i]];
     const filename = data[filenameIndex];
     try {
-      if (data[arHashIndex]) { throw new Error(`${filename} - ${data[arHashIndex]} already existed`); }
+      if (data[arHashIndex]) { throw new Error(); } // silently skip
       const buffer = await getFileBuffer(filename, data[ipfsHashIndex]);
       const hasLocalFile = verifyLocalFile(filename);
       if (hasLocalFile) {
         const calculatedHash = await IPFSOnlyHash.of(buffer);
         if (data[ipfsHashIndex] !== calculatedHash) {
-          // eslint-disable-next-line no-console
-          console.log(`Update IPFS hash from ${data[ipfsHashIndex]} to ${calculatedHash}`);
           data[ipfsHashIndex] = calculatedHash;
         }
       }
@@ -114,9 +112,11 @@ async function run() {
         fs.writeFileSync(savingPath, buffer);
         data[filenameIndex] = savingName;
       }
-    } catch (error) {
       // eslint-disable-next-line no-console
-      console.error(error);
+      console.log(`- ${data[filenameIndex]} ${data[arHashIndex]}`);
+    } catch ({ message }) {
+      // eslint-disable-next-line no-console
+      if (message) { console.error(message); }
     } finally {
       output.push(data);
     }
