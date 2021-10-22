@@ -14,7 +14,7 @@ const jwk = require('./jwk.json');
 const IPFS_KEY = 'IPFS-Add';
 const IPFS_CONSTRAINT_KEY = 'standard';
 const IPFS_CONSTRAINT = 'v0.1';
-const INPUT_FILE_NAME = process.env.INPUT_FILE || 'list.csv';
+const INPUT_FILE_NAME = process.argv[2] || 'list.csv';
 const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 
 const ipfs = create({ url: 'https://ipfs.infura.io:5001/api/v0' });
