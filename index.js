@@ -20,6 +20,25 @@ const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 const ipfs = create({ url: 'https://ipfs.infura.io:5001/api/v0' });
 const arweave = Arweave.init({ host: 'arweave.net', port: 443, protocol: 'https' });
 
+async function getArHashFromIPFSHash(ipfsHash) {
+  const res = await arweave.arql(
+    {
+      op: 'and',
+      expr1: {
+        op: 'equals',
+        expr1: IPFS_KEY,
+        expr2: ipfsHash,
+      },
+      expr2: {
+        op: 'equals',
+        expr1: IPFS_CONSTRAINT_KEY,
+        expr2: IPFS_CONSTRAINT,
+      },
+    },
+  );
+  return res[0] || null;
+}
+
 async function createTx(buffer, mimetype, ipfsHash = null) {
   const { data: anchorId } = await arweave.api.get('/tx_anchor');
   const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
@@ -99,6 +118,13 @@ async function run() {
         }
       }
 
+    if (data[ipfsHashIndex]) {
+      const arHash = await getArHashFromIPFSHash(data[ipfsHashIndex]);
+      if (arHash) {
+        data[ipfsHashIndex] = arHash;
+        return data;
+      }
+    }
       const { mime, ext } = await getMimeAndExt(filename, buffer);
       const tx = await createTx(buffer, mime, data[ipfsHashIndex]);
       await signAndPostTx(tx);
