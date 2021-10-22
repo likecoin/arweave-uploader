@@ -19,9 +19,9 @@ const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 
 const ipfs = create({ url: 'https://ipfs.infura.io:5001/api/v0' });
 const arweave = Arweave.init({ host: 'arweave.net', port: 443, protocol: 'https' });
-let anchorId;
 
 async function createTx(buffer, mimetype, ipfsHash = null) {
+  const { data: anchorId } = await arweave.api.get('/tx_anchor');
   const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
   tx.addTag('Content-Type', mimetype);
   if (ipfsHash) {
