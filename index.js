@@ -75,7 +75,7 @@ async function getFileBuffer(filename, ipfsHash) {
   if (ipfsHash) {
     return loadFileFromIPFS(ipfsHash);
   }
-  throw new Error(`Cannot get ${filename}`);
+  throw new Error(`Cannot get ${filename} from local directory or IPFS.`);
 }
 
 async function getMimeAndExt(filename, buffer) {
@@ -87,34 +87,33 @@ async function getMimeAndExt(filename, buffer) {
   return { mime, ext };
 }
 
-async function run() {
-  const inputBuffer = fs.readFileSync(INPUT_FILE_NAME);
-  const input = parseCSV(inputBuffer);
-
-  const header = [...input[0]];
+function handleHeader(input) {
+  const header = [...input];
   if (!header.includes('filename')) { throw new Error('filename field not found'); }
   if (!header.includes('ipfsHash')) { header.push('ipfsHash'); }
   if (!header.includes('arHash')) { header.push('arHash'); }
-  const filenameIndex = header.indexOf('filename');
-  const ipfsHashIndex = header.indexOf('ipfsHash');
-  const arHashIndex = header.indexOf('arHash');
-  fs.writeFileSync(OUTPUT_FILE_NAME, stringifyCSV([header]));
+  return header;
+}
 
-  /* eslint-disable no-await-in-loop */
-  for (let i = 1; i < input.length; i += 1) {
-    const data = [...input[i]];
-    const filename = data[filenameIndex];
-    try {
-      if (data[arHashIndex]) { throw new Error(); } // silently skip
-      const buffer = await getFileBuffer(filename, data[ipfsHashIndex]);
-      const hasLocalFile = verifyLocalFile(filename);
-      if (hasLocalFile) {
-        const calculatedHash = await IPFSOnlyHash.of(buffer);
-        if (data[ipfsHashIndex] !== calculatedHash) {
-          data[ipfsHashIndex] = calculatedHash;
-        }
+async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) {
+  const data = [...input];
+  const filename = data[filenameIndex];
+  try {
+    if (data[arHashIndex]) { return data; }
+    const buffer = await getFileBuffer(filename, data[ipfsHashIndex]);
+    const hasLocalFile = verifyLocalFile(filename);
+
+    // check IPFS hash for local file
+    if (hasLocalFile && data[ipfsHashIndex]) {
+      const IPFSHash = await IPFSOnlyHash.of(buffer);
+      if (data[ipfsHashIndex] !== IPFSHash) {
+        data[ipfsHashIndex] = IPFSHash;
+        // eslint-disable-next-line no-console
+        console.log(`Update IPFS hash of ${filename}.`);
       }
+    }
 
+    // check if Arweave already has the file with the specified IPFS tags
     if (data[ipfsHashIndex]) {
       const arHash = await getArHashFromIPFSHash(data[ipfsHashIndex]);
       if (arHash) {
@@ -122,23 +121,40 @@ async function run() {
         return data;
       }
     }
-      const { mime, ext } = await getMimeAndExt(filename, buffer);
+    const { mime, ext } = await getMimeAndExt(filename, buffer);
     data[arHashIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
 
-      if (!hasLocalFile) {
-        const savingName = `${arHash}.${ext}`;
-        const savingPath = `upload/${savingName}`;
-        fs.writeFileSync(savingPath, buffer);
-        data[filenameIndex] = savingName;
-      }
-      // eslint-disable-next-line no-console
-      console.log(`- ${data[filenameIndex]} ${data[arHashIndex]}`);
-    } catch ({ message }) {
-      // eslint-disable-next-line no-console
-      if (message) { console.error(message); }
-    } finally {
-      fs.appendFileSync(OUTPUT_FILE_NAME, stringifyCSV([data]));
+    // save file to local directory if there is no local file
+    if (!hasLocalFile) {
+      const savingName = `${data[arHashIndex]}.${ext}`;
+      const savingPath = `upload/${savingName}`;
+      fs.writeFileSync(savingPath, buffer);
+      data[filenameIndex] = savingName;
     }
+    // eslint-disable-next-line no-console
+    console.log(`- ${data[filenameIndex]} ${data[arHashIndex]}`);
+    return data;
+  } catch ({ message }) {
+    // eslint-disable-next-line no-console
+    console.error(message);
+    return data;
+  }
+}
+
+async function run() {
+  const inputBuffer = fs.readFileSync(INPUT_FILE_NAME);
+  const input = parseCSV(inputBuffer);
+
+  const header = handleHeader(input[0]);
+  fs.writeFileSync(OUTPUT_FILE_NAME, stringifyCSV([header]));
+
+  const filenameIndex = header.indexOf('filename');
+  const ipfsHashIndex = header.indexOf('ipfsHash');
+  const arHashIndex = header.indexOf('arHash');
+  /* eslint-disable no-await-in-loop */
+  for (let i = 1; i < input.length; i += 1) {
+    const data = await handleData(input[i], { filenameIndex, ipfsHashIndex, arHashIndex });
+    fs.appendFileSync(OUTPUT_FILE_NAME, stringifyCSV([data]));
   }
   /* eslint-enable no-await-in-loop */
 }
