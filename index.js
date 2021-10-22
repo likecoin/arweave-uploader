@@ -74,7 +74,6 @@ async function getMimeAndExt(filename, buffer) {
 async function run() {
   const inputBuffer = fs.readFileSync(INPUT_FILE_NAME);
   const input = parseCSV(inputBuffer);
-  const output = [];
 
   const header = [...input[0]];
   if (!header.includes('filename')) { throw new Error('filename field not found'); }
@@ -83,7 +82,7 @@ async function run() {
   const filenameIndex = header.indexOf('filename');
   const ipfsHashIndex = header.indexOf('ipfsHash');
   const arHashIndex = header.indexOf('arHash');
-  output.push(header);
+  fs.writeFileSync(OUTPUT_FILE_NAME, stringifyCSV([header]));
 
   /* eslint-disable no-await-in-loop */
   for (let i = 1; i < input.length; i += 1) {
@@ -118,11 +117,10 @@ async function run() {
       // eslint-disable-next-line no-console
       if (message) { console.error(message); }
     } finally {
-      output.push(data);
+      fs.appendFileSync(OUTPUT_FILE_NAME, stringifyCSV([data]));
     }
   }
   /* eslint-enable no-await-in-loop */
-  fs.writeFileSync(OUTPUT_FILE_NAME, stringifyCSV(output));
 }
 
 run();
