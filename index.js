@@ -39,7 +39,7 @@ async function getArHashFromIPFSHash(ipfsHash) {
   return res[0] || null;
 }
 
-async function createTx(buffer, mimetype, ipfsHash = null) {
+async function submitToArweave(buffer, mimetype, ipfsHash = null) {
   const { data: anchorId } = await arweave.api.get('/tx_anchor');
   const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
   tx.addTag('Content-Type', mimetype);
@@ -47,12 +47,9 @@ async function createTx(buffer, mimetype, ipfsHash = null) {
     tx.addTag(IPFS_KEY, ipfsHash);
     tx.addTag(IPFS_CONSTRAINT_KEY, IPFS_CONSTRAINT);
   }
-  return tx;
-}
-
-async function signAndPostTx(tx) {
   await arweave.transactions.sign(tx, jwk);
   await arweave.transactions.post(tx);
+  return tx.id;
 }
 
 function verifyLocalFile(filename) {
@@ -126,10 +123,7 @@ async function run() {
       }
     }
       const { mime, ext } = await getMimeAndExt(filename, buffer);
-      const tx = await createTx(buffer, mime, data[ipfsHashIndex]);
-      await signAndPostTx(tx);
-      const { id: arHash } = tx;
-      data[arHashIndex] = arHash;
+    data[arHashIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
 
       if (!hasLocalFile) {
         const savingName = `${arHash}.${ext}`;
