@@ -146,7 +146,7 @@ async function run() {
   const input = parseCSV(inputBuffer);
 
   const header = handleHeader(input[0]);
-  fs.writeFileSync(OUTPUT_FILE_NAME, stringifyCSV([header]));
+  fs.appendFileSync(OUTPUT_FILE_NAME, stringifyCSV([header]));
 
   const filenameIndex = header.indexOf('filename');
   const ipfsHashIndex = header.indexOf('ipfsHash');
