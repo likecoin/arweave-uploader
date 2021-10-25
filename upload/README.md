@@ -1,0 +1,1 @@
+Store the files to be uploaded in this folder.
