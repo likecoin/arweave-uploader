@@ -9,7 +9,7 @@ const { concat } = require('uint8arrays/concat');
 const { fromBuffer } = require('file-type');
 const MimeTypes = require('mime-types');
 
-const jwk = require('./jwk.json');
+const jwk = require('./arweave-key.json');
 
 const IPFS_KEY = 'IPFS-Add';
 const IPFS_CONSTRAINT_KEY = 'standard';

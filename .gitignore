@@ -5,7 +5,7 @@ node_modules/
 .vscode
 
 # Arweav key
-jwk.json
+arweave-key.json
 
 # CSV
 *.csv
