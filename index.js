@@ -89,7 +89,7 @@ async function getMimeAndExt(filename, buffer) {
 
 function handleHeader(input) {
   const header = [...input];
-  if (!header.includes('filename')) { throw new Error('filename field not found'); }
+  if (!header.includes('filename')) { header.push('filename'); }
   if (!header.includes('ipfsHash')) { header.push('ipfsHash'); }
   if (!header.includes('arHash')) { header.push('arHash'); }
   return header;
