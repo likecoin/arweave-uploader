@@ -42,7 +42,9 @@ async function getArHashFromIPFSHash(ipfsHash) {
 async function submitToArweave(buffer, mimetype, ipfsHash = null) {
   const { data: anchorId } = await arweave.api.get('/tx_anchor');
   const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
-  tx.addTag('Content-Type', mimetype);
+  if (mimetype) {
+    tx.addTag('Content-Type', mimetype);
+  }
   if (ipfsHash) {
     tx.addTag(IPFS_KEY, ipfsHash);
     tx.addTag(IPFS_CONSTRAINT_KEY, IPFS_CONSTRAINT);
@@ -121,7 +123,15 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
         return data;
       }
     }
-    const { mime, ext } = await getMimeAndExt(filename, buffer);
+
+    let mime = null;
+    let ext = '';
+    try {
+      ({ mime, ext } = await getMimeAndExt(filename, buffer));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Cannot get mime type, will ignore mime tag when uploading to Arweave.');
+    }
     data[arHashIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
 
     // save file to local directory if there is no local file
