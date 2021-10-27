@@ -101,7 +101,11 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
   const data = [...input];
   const filename = data[filenameIndex];
   try {
-    if (data[arHashIndex]) { return data; }
+    if (data[arHashIndex]) {
+      // eslint-disable-next-line no-console
+      console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arHashIndex]}`);
+      return data;
+    }
     const buffer = await getFileBuffer(filename, data[ipfsHashIndex]);
     const hasLocalFile = verifyLocalFile(filename);
 
@@ -119,7 +123,9 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
     if (data[ipfsHashIndex]) {
       const arHash = await getArHashFromIPFSHash(data[ipfsHashIndex]);
       if (arHash) {
-        data[ipfsHashIndex] = arHash;
+        data[arHashIndex] = arHash;
+        // eslint-disable-next-line no-console
+        console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arHashIndex]}`);
         return data;
       }
     }
@@ -130,7 +136,7 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
       ({ mime, ext } = await getMimeAndExt(filename, buffer));
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.warn('Cannot get mime type, will ignore mime tag when uploading to Arweave.');
+      console.log(`Skip mime tag: ${filename}(${data[ipfsHashIndex]}).`);
     }
     data[arHashIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
 
@@ -142,11 +148,11 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
       data[filenameIndex] = savingName;
     }
     // eslint-disable-next-line no-console
-    console.log(`- ${data[filenameIndex]} ${data[arHashIndex]}`);
+    console.log(`Uploaded: ${data[filenameIndex]} - ${data[arHashIndex]}`);
     return data;
   } catch ({ message }) {
     // eslint-disable-next-line no-console
-    console.error(message);
+    console.error(`Error: ${message}`);
     return data;
   }
 }
