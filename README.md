@@ -27,10 +27,12 @@ Name your Arweave key as `arweave-key.json` and put it in the root directory.
    ```
     The resulting Arweave hash will be show on both console and `./output-list.csv`.
 
-Note that `ipfsHash` field is optinal, if `ipfsHash` is provided:
-1. Program will check and update the `ipfsHash` if the matching local file is available.
-2. Program will get file from IPFS and store in `./upload/` folder if local file is inavailable.
-3. Program will skip uploading the file if file with the same `ipfsHash` tag can already be found on Arweave.
+Note that both `filename` and `ipfsHash` fields are optinal, but either one should be provided for each row of data:
+1. Program will check and update the `ipfsHash` if local file is found.
+2. Program will get file from IPFS and store in `./upload/` folder if local file isn't found.
+3. Program will skip uploading the file if file with the same `ipfsHash` tag can already be found in Arweave.
+
+Note that the mime type of text-based formats like `.txt`, `.csv`, `.svg`, etc is difficult to detect. Program will not add a mime tag for files loaded from IPFS when uploading.
 
 ## Contributing
 
