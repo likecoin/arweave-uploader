@@ -144,8 +144,8 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
 
     // save file to local directory if there is no local file
     if (!hasLocalFile) {
-      const suffix = ext ? `.${ext}` : '';
-      const savingName = data[arIdIndex] + suffix;
+      const fileExt = ext ? `.${ext}` : '';
+      const savingName = filename || (data[arIdIndex] + fileExt);
       const savingPath = `upload/${savingName}`;
       fs.writeFileSync(savingPath, buffer);
       data[filenameIndex] = savingName;
