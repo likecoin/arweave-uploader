@@ -1,4 +1,4 @@
-# ISCN Arweave Uploader
+# Arweave Uploader
 
 Batch upload your files to Arweave.
 

@@ -1,19 +1,19 @@
 {
-  "name": "iscn-arweave-uploader",
+  "name": "arweave-uploader",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": "git+https://github.com/likecoin/iscn-arweave-uploader.git",
+  "repository": "git+https://github.com/likecoin/arweave-uploader.git",
   "keywords": [],
   "author": "Wei-Jun Hung <weijunhung@outlook.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/likecoin/iscn-arweave-uploader/issues"
+    "url": "https://github.com/likecoin/arweave-uploader/issues"
   },
-  "homepage": "https://github.com/likecoin/iscn-arweave-uploader#readme",
+  "homepage": "https://github.com/likecoin/arweave-uploader#readme",
   "dependencies": {
     "arweave": "^1.10.18",
     "csv-parse": "^4.16.3",
