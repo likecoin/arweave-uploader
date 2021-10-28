@@ -99,6 +99,8 @@ function handleHeader(input) {
 
 async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) {
   const data = [...input];
+  data[ipfsHashIndex] = data[ipfsHashIndex] || '';
+  data[arHashIndex] = data[arHashIndex] || '';
   const filename = data[filenameIndex];
   try {
     if (data[arHashIndex]) {
