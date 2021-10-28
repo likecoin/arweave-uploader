@@ -20,7 +20,7 @@ const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 const ipfs = create({ url: 'https://ipfs.infura.io:5001/api/v0' });
 const arweave = Arweave.init({ host: 'arweave.net', port: 443, protocol: 'https' });
 
-async function getArHashFromIPFSHash(ipfsHash) {
+async function getArIdFromIPFSHash(ipfsHash) {
   const res = await arweave.arql(
     {
       op: 'and',
@@ -93,19 +93,19 @@ function handleHeader(input) {
   const header = [...input];
   if (!header.includes('filename')) { header.push('filename'); }
   if (!header.includes('ipfsHash')) { header.push('ipfsHash'); }
-  if (!header.includes('arHash')) { header.push('arHash'); }
+  if (!header.includes('arweaveId')) { header.push('arweaveId'); }
   return header;
 }
 
-async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) {
+async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
   const data = [...input];
   data[ipfsHashIndex] = data[ipfsHashIndex] || '';
-  data[arHashIndex] = data[arHashIndex] || '';
+  data[arIdIndex] = data[arIdIndex] || '';
   const filename = data[filenameIndex];
   try {
-    if (data[arHashIndex]) {
+    if (data[arIdIndex]) {
       // eslint-disable-next-line no-console
-      console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arHashIndex]}`);
+      console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arIdIndex]}`);
       return data;
     }
     const buffer = await getFileBuffer(filename, data[ipfsHashIndex]);
@@ -123,11 +123,11 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
 
     // check if Arweave already has the file with the specified IPFS tags
     if (data[ipfsHashIndex]) {
-      const arHash = await getArHashFromIPFSHash(data[ipfsHashIndex]);
-      if (arHash) {
-        data[arHashIndex] = arHash;
+      const arId = await getArIdFromIPFSHash(data[ipfsHashIndex]);
+      if (arId) {
+        data[arIdIndex] = arId;
         // eslint-disable-next-line no-console
-        console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arHashIndex]}`);
+        console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arIdIndex]}`);
         return data;
       }
     }
@@ -140,18 +140,18 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arHashIndex }) 
       // eslint-disable-next-line no-console
       console.log(`Skip mime tag: ${filename}(${data[ipfsHashIndex]}).`);
     }
-    data[arHashIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
+    data[arIdIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
 
     // save file to local directory if there is no local file
     if (!hasLocalFile) {
       const suffix = ext ? `.${ext}` : '';
-      const savingName = data[arHashIndex] + suffix;
+      const savingName = data[arIdIndex] + suffix;
       const savingPath = `upload/${savingName}`;
       fs.writeFileSync(savingPath, buffer);
       data[filenameIndex] = savingName;
     }
     // eslint-disable-next-line no-console
-    console.log(`Uploaded: ${data[filenameIndex]} - ${data[arHashIndex]}`);
+    console.log(`Uploaded: ${data[filenameIndex]} - ${data[arIdIndex]}`);
     return data;
   } catch ({ message }) {
     // eslint-disable-next-line no-console
@@ -169,10 +169,10 @@ async function run() {
 
   const filenameIndex = header.indexOf('filename');
   const ipfsHashIndex = header.indexOf('ipfsHash');
-  const arHashIndex = header.indexOf('arHash');
+  const arIdIndex = header.indexOf('arweaveId');
   /* eslint-disable no-await-in-loop */
   for (let i = 1; i < input.length; i += 1) {
-    const data = await handleData(input[i], { filenameIndex, ipfsHashIndex, arHashIndex });
+    const data = await handleData(input[i], { filenameIndex, ipfsHashIndex, arIdIndex });
     fs.appendFileSync(OUTPUT_FILE_NAME, stringifyCSV([data]));
   }
   /* eslint-enable no-await-in-loop */
