@@ -162,7 +162,7 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
 
 async function run() {
   const inputBuffer = fs.readFileSync(INPUT_FILE_NAME);
-  const input = parseCSV(inputBuffer);
+  const input = parseCSV(inputBuffer, { relax_column_count: true });
 
   const header = handleHeader(input[0]);
   fs.writeFileSync(OUTPUT_FILE_NAME, stringifyCSV([header]));
