@@ -14,7 +14,8 @@ async function getFileBuffer(filename, ipfsHash) {
     return loadFileFromLocal(`upload/${filename}`);
   }
   if (ipfsHash) {
-    return loadFileFromIPFS(ipfsHash);
+    const ipfsTar = await loadFileFromIPFS(ipfsHash);
+    return ipfsTar[0].buffer; // TODO support multi file
   }
   throw new Error(`Cannot get ${filename} from local directory or IPFS.`);
 }
