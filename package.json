@@ -22,6 +22,10 @@
     "ipfs-http-client": "^53.0.1",
     "ipfs-only-hash": "^4.0.0",
     "it-all": "^1.0.6",
+    "it-map": "^1.0.6",
+    "it-pipe": "^1.1.0",
+    "it-tar": "^4.0.0",
+    "it-to-buffer": "^2.0.2",
     "mime-types": "^2.1.33",
     "uint8arrays": "^3.0.0"
   },
