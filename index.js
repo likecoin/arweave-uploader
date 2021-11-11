@@ -20,6 +20,13 @@ async function getFileBuffers(filename, ipfsHash) {
   if (ipfsHash) {
     let ipfsTar = await loadFileFromIPFS(ipfsHash);
     ipfsTar = ipfsTar.filter((i) => i.buffer && i.buffer.length);
+    ipfsTar = ipfsTar.map((i) => {
+      const name = i.name.replace(`${ipfsHash}/`, '');
+      return {
+        ...i,
+        name,
+      };
+    });
     return ipfsTar;
   }
   throw new Error(`Cannot get ${filename} from local directory or IPFS.`);
