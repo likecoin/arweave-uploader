@@ -76,14 +76,8 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
     }
 
     const mimeList = await Promise.all(fileList.map(async (f) => {
-      try {
-        const { mime, ext } = await getMimeAndExt(f.name, f.buffer);
-        return { mime, ext };
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(`Skip mime tag: ${filename}(${data[ipfsHashIndex]}).`);
-        return {};
-      }
+      const { mime, ext } = await getMimeAndExt(f.name, f.buffer);
+      return { mime, ext };
     }));
     fileList = fileList.map((f, i) => ({ ...f, ...mimeList[i] }));
     data[arIdIndex] = await uploadFilesToArweave(fileList, data[ipfsHashIndex]);
