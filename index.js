@@ -1,21 +1,26 @@
 const fs = require('fs');
 const parseCSV = require('csv-parse/lib/sync');
 const stringifyCSV = require('csv-stringify/lib/sync');
-const IPFSOnlyHash = require('ipfs-only-hash');
-const { verifyLocalFile, loadFileFromLocal, getMimeAndExt } = require('./utils/file');
-const { loadFileFromIPFS } = require('./utils/ipfs');
-const { getArIdFromIPFSHash, submitToArweave } = require('./utils/arweave');
+const {
+  verifyLocalFile,
+  loadFileFromLocal,
+  getMimeAndExt,
+  saveToLocal,
+} = require('./utils/file');
+const { loadFileFromIPFS, getIPFSHash } = require('./utils/ipfs');
+const { getArIdFromIPFSHash, uploadFilesToArweave } = require('./utils/arweave');
 
 const INPUT_FILE_NAME = process.argv[2] || 'list.csv';
 const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 
-async function getFileBuffer(filename, ipfsHash) {
+async function getFileBuffers(filename, ipfsHash) {
   if (verifyLocalFile(filename)) {
     return loadFileFromLocal(`upload/${filename}`);
   }
   if (ipfsHash) {
-    const ipfsTar = await loadFileFromIPFS(ipfsHash);
-    return ipfsTar[0].buffer; // TODO support multi file
+    let ipfsTar = await loadFileFromIPFS(ipfsHash);
+    ipfsTar = ipfsTar.filter((i) => i.buffer && i.buffer.length);
+    return ipfsTar;
   }
   throw new Error(`Cannot get ${filename} from local directory or IPFS.`);
 }
@@ -39,12 +44,12 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
       console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arIdIndex]}`);
       return data;
     }
-    const buffer = await getFileBuffer(filename, data[ipfsHashIndex]);
+    let fileList = await getFileBuffers(filename, data[ipfsHashIndex]);
     const hasLocalFile = verifyLocalFile(filename);
 
     // check IPFS hash for local file
     if (hasLocalFile && data[ipfsHashIndex]) {
-      const IPFSHash = await IPFSOnlyHash.of(buffer);
+      const IPFSHash = await getIPFSHash(fileList);
       if (data[ipfsHashIndex] !== IPFSHash) {
         data[ipfsHashIndex] = IPFSHash;
         // eslint-disable-next-line no-console
@@ -63,26 +68,27 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
       }
     }
 
-    let mime = null;
-    let ext = '';
-    try {
-      ({ mime, ext } = await getMimeAndExt(filename, buffer));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(`Skip mime tag: ${filename}(${data[ipfsHashIndex]}).`);
-    }
-    data[arIdIndex] = await submitToArweave(buffer, mime, data[ipfsHashIndex]);
+    const mimeList = await Promise.all(fileList.map(async (f) => {
+      try {
+        const { mime, ext } = await getMimeAndExt(f.name, f.buffer);
+        return { mime, ext };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(`Skip mime tag: ${filename}(${data[ipfsHashIndex]}).`);
+        return {};
+      }
+    }));
+    fileList = fileList.map((f, i) => ({ ...f, ...mimeList[i] }));
+    data[arIdIndex] = await uploadFilesToArweave(fileList, data[ipfsHashIndex]);
+    const arId = data[arIdIndex];
 
     // save file to local directory if there is no local file
     if (!hasLocalFile) {
-      const fileExt = ext ? `.${ext}` : '';
-      const savingName = filename || (data[arIdIndex] + fileExt);
-      const savingPath = `upload/${savingName}`;
-      fs.writeFileSync(savingPath, buffer);
+      const savingName = saveToLocal(fileList, arId);
       data[filenameIndex] = savingName;
     }
     // eslint-disable-next-line no-console
-    console.log(`Uploaded: ${data[filenameIndex]} - ${data[arIdIndex]}`);
+    console.log(`Uploaded: ${data[filenameIndex]} - ${arId}`);
     return data;
   } catch ({ message }) {
     // eslint-disable-next-line no-console
