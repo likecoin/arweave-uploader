@@ -1,74 +1,13 @@
 const fs = require('fs');
 const parseCSV = require('csv-parse/lib/sync');
 const stringifyCSV = require('csv-stringify/lib/sync');
-const Arweave = require('arweave/node');
 const IPFSOnlyHash = require('ipfs-only-hash');
-const { create } = require('ipfs-http-client');
-const all = require('it-all');
-const { concat } = require('uint8arrays/concat');
-const { fromBuffer } = require('file-type');
-const MimeTypes = require('mime-types');
+const { verifyLocalFile, loadFileFromLocal, getMimeAndExt } = require('./utils/file');
+const { loadFileFromIPFS } = require('./utils/ipfs');
+const { getArIdFromIPFSHash, submitToArweave } = require('./utils/arweave');
 
-const jwk = require('./arweave-key.json');
-
-const IPFS_KEY = 'IPFS-Add';
-const IPFS_CONSTRAINT_KEY = 'standard';
-const IPFS_CONSTRAINT = 'v0.1';
 const INPUT_FILE_NAME = process.argv[2] || 'list.csv';
 const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
-
-const ipfs = create({ url: 'https://ipfs.infura.io:5001/api/v0' });
-const arweave = Arweave.init({ host: 'arweave.net', port: 443, protocol: 'https' });
-
-async function getArIdFromIPFSHash(ipfsHash) {
-  const res = await arweave.arql(
-    {
-      op: 'and',
-      expr1: {
-        op: 'equals',
-        expr1: IPFS_KEY,
-        expr2: ipfsHash,
-      },
-      expr2: {
-        op: 'equals',
-        expr1: IPFS_CONSTRAINT_KEY,
-        expr2: IPFS_CONSTRAINT,
-      },
-    },
-  );
-  return res[0] || null;
-}
-
-async function submitToArweave(buffer, mimetype, ipfsHash = null) {
-  const { data: anchorId } = await arweave.api.get('/tx_anchor');
-  const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
-  if (mimetype) {
-    tx.addTag('Content-Type', mimetype);
-  }
-  if (ipfsHash) {
-    tx.addTag(IPFS_KEY, ipfsHash);
-    tx.addTag(IPFS_CONSTRAINT_KEY, IPFS_CONSTRAINT);
-  }
-  await arweave.transactions.sign(tx, jwk);
-  await arweave.transactions.post(tx);
-  return tx.id;
-}
-
-function verifyLocalFile(filename) {
-  return filename && fs.existsSync(`upload/${filename}`);
-}
-
-async function loadFileFromLocal(filepath) {
-  return fs.readFileSync(filepath);
-}
-
-async function loadFileFromIPFS(ipfsHash) {
-  try {
-    return concat(await all(ipfs.cat(ipfsHash)));
-  } catch (error) {
-    throw new Error(`Cannot get file from IPFS: ${ipfsHash}`);
-  }
-}
 
 async function getFileBuffer(filename, ipfsHash) {
   if (verifyLocalFile(filename)) {
@@ -78,15 +17,6 @@ async function getFileBuffer(filename, ipfsHash) {
     return loadFileFromIPFS(ipfsHash);
   }
   throw new Error(`Cannot get ${filename} from local directory or IPFS.`);
-}
-
-async function getMimeAndExt(filename, buffer) {
-  if (verifyLocalFile(filename)) {
-    const mime = MimeTypes.lookup(`upload/${filename}`);
-    return { mime };
-  }
-  const { mime, ext } = await fromBuffer(buffer);
-  return { mime, ext };
 }
 
 function handleHeader(input) {
