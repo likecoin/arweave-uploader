@@ -2,7 +2,7 @@ const fs = require('fs');
 const glob = require('glob-promise');
 const { fromBuffer } = require('file-type');
 const MimeTypes = require('mime-types');
-const { basename } = require('path');
+const { basename, dirname } = require('path');
 
 async function isPathDirectory(filepath) {
   return fs.lstatSync(filepath).isDirectory();
@@ -58,18 +58,31 @@ function saveFileToLocal(file, arId, prefix = '') {
   const fileExt = ext ? `.${ext}` : '';
   const savingName = name || (arId + fileExt);
   let uploadBase = 'upload';
-  if (prefix) uploadBase += `/${prefix}`;
+  if (prefix) {
+    uploadBase += `/${prefix}`;
+  }
   const savingPath = `${uploadBase}/${savingName}`;
+  const dirName = dirname(savingPath);
+  if (dirName) {
+    if (!fs.existsSync(dirName)) {
+      try {
+        fs.mkdirSync(dirName, { recursive: true });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
   fs.writeFileSync(savingPath, buffer);
   return savingName;
 }
 
 function saveToLocal(files, arId) {
   if (files.length > 1) {
-    const [savingName] = files.map((f) => saveFileToLocal(f, '', arId));
-    return savingName;
+    files.map((f) => saveFileToLocal(f, '', arId));
+    return arId;
   }
-  const savingName = saveFileToLocal(files, arId);
+  const [file] = files;
+  const savingName = saveFileToLocal(file, arId);
   return savingName;
 }
 
