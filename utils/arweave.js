@@ -56,17 +56,17 @@ function generateManifestFile(files) {
   const manifest = generateManifest(files);
   return {
     name: 'manifest',
-    mimetype: 'application/x.arweave-manifest+json',
+    mime: 'application/x.arweave-manifest+json',
     buffer: Buffer.from(stringify(manifest), 'utf-8'),
   };
 }
 
 async function submitToArweave(file, ipfsHash = null) {
-  const { buffer, mimetype } = file;
+  const { buffer, mime } = file;
   const { data: anchorId } = await arweave.api.get('/tx_anchor');
   const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
-  if (mimetype) {
-    tx.addTag('Content-Type', mimetype);
+  if (mime) {
+    tx.addTag('Content-Type', mime);
   }
   if (ipfsHash) {
     tx.addTag(IPFS_KEY, ipfsHash);

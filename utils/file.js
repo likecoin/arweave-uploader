@@ -32,12 +32,25 @@ function verifyLocalFile(filename) {
 }
 
 async function getMimeAndExt(filename, buffer) {
+  let mime;
   if (verifyLocalFile(filename)) {
-    const mime = MimeTypes.lookup(`upload/${filename}`);
-    return { mime };
+    mime = MimeTypes.lookup(`upload/${filename}`);
+    if (mime) return { mime };
   }
-  const { mime, ext } = await fromBuffer(buffer);
-  return { mime, ext };
+  if (buffer) {
+    let ext;
+    try {
+      ({ mime, ext } = await fromBuffer(buffer));
+    } catch (err) {
+      // no op
+    }
+    if (mime) {
+      return { mime, ext };
+    }
+  }
+  // by string
+  if (filename) mime = MimeTypes.lookup(filename);
+  return mime ? { mime } : {};
 }
 
 function saveFileToLocal(file, arId, prefix = '') {
