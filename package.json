@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "git+https://github.com/likecoin/arweave-uploader.git",
@@ -18,7 +19,9 @@
     "arweave": "^1.10.18",
     "csv-parse": "^4.16.3",
     "csv-stringify": "^5.6.5",
+    "fast-json-stable-stringify": "^2.1.0",
     "file-type": "^16.5.3",
+    "glob-promise": "^4.2.2",
     "ipfs-http-client": "^53.0.1",
     "ipfs-only-hash": "^4.0.0",
     "it-all": "^1.0.6",
