@@ -62,7 +62,8 @@ function generateManifestFile(files) {
 }
 
 async function submitToArweave(file, ipfsHash = null) {
-  const { buffer, mime } = file;
+  const { buffer, mime, name } = file;
+  console.log(`Uploading ${name} to arweave...`);
   const { data: anchorId } = await arweave.api.get('/tx_anchor');
   const tx = await arweave.createTransaction({ data: buffer, last_tx: anchorId }, jwk);
   if (mime) {
@@ -97,6 +98,7 @@ async function uploadFileToArweave(file, ipfsHash) {
 }
 
 async function uploadFilesToArweave(files, ipfsHash = null) {
+  console.log(`Uploading ${ipfsHash} to arweave...`);
   if (files.length === 1) {
     return uploadFileToArweave(files[0], ipfsHash);
   }

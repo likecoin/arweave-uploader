@@ -39,6 +39,8 @@ async function* tarballed(source) {
     async function* (src) {
       // eslint-disable-next-line no-restricted-syntax
       for await (const entry of src) {
+        const { name } = entry.header;
+        console.log(`IPFS file: ${name} found`);
         yield {
           ...entry,
           name: entry.header.name,
@@ -55,6 +57,7 @@ async function collect(source) {
 
 async function loadFileFromIPFS(ipfsHash) {
   try {
+    console.log(`Querying ${ipfsHash} from IPFS node...`);
     triggerIPFSGet(ipfsHash);
     const output = await pipe(
       ipfs.get(ipfsHash),
@@ -62,7 +65,8 @@ async function loadFileFromIPFS(ipfsHash) {
       collect,
     );
     return output;
-  } catch (error) {
+  } catch (err) {
+    console.error(err);
     throw new Error(`Cannot get file from IPFS: ${ipfsHash}`);
   }
 }

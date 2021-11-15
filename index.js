@@ -15,9 +15,11 @@ const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 
 async function getFileBuffers(filename, ipfsHash) {
   if (verifyLocalFile(filename)) {
+    console.log(`Loading files from local: ${filename}`);
     return loadFileFromLocal(`upload/${filename}`);
   }
   if (ipfsHash) {
+    console.log(`Loading files from IPFS ${ipfsHash}`);
     let ipfsTar = await loadFileFromIPFS(ipfsHash);
     ipfsTar = ipfsTar.filter((i) => i.buffer && i.buffer.length);
     ipfsTar = ipfsTar.map((i) => {
@@ -60,7 +62,7 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
       if (data[ipfsHashIndex] !== IPFSHash) {
         data[ipfsHashIndex] = IPFSHash;
         // eslint-disable-next-line no-console
-        console.log(`Update IPFS hash of ${filename}.`);
+        console.log(`Update IPFS hash of ${filename}: ${IPFSHash}`);
       }
     }
 
