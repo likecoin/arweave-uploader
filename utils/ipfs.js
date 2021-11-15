@@ -2,11 +2,34 @@ const { create } = require('ipfs-http-client');
 const { extract } = require('it-tar');
 const { pipe } = require('it-pipe');
 const toBuffer = require('it-to-buffer');
+const axios = require('axios');
 const map = require('it-map');
 const all = require('it-all');
 const IPFSOnlyHash = require('ipfs-only-hash');
+const { HttpsAgent } = require('agentkeepalive');
 
-const ipfs = create({ url: 'https://ipfs.infura.io:5001/api/v0' });
+const IPFS_GATEWAY_LIST = [
+  'https://ipfs.io/ipfs/',
+  'https://infura-ipfs.io/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/',
+];
+
+const IPFS_TIMEOUT = 61000; // 1min
+
+const ipfs = create({
+  url: 'https://ipfs.infura.io:5001/api/v0',
+  timeout: IPFS_TIMEOUT,
+  agent: new HttpsAgent({
+    timeout: IPFS_TIMEOUT,
+  }),
+});
+
+async function triggerIPFSGet(ipfsHash) {
+  // hacky function to try to speed up ipfs retrieval
+  IPFS_GATEWAY_LIST.map(async (g) => {
+    try { await axios.get(`${g}${ipfsHash}`, { timeout: IPFS_TIMEOUT }); } catch (_) { /* no op */ }
+  });
+}
 
 async function* tarballed(source) {
   yield* pipe(
@@ -32,6 +55,7 @@ async function collect(source) {
 
 async function loadFileFromIPFS(ipfsHash) {
   try {
+    triggerIPFSGet(ipfsHash);
     const output = await pipe(
       ipfs.get(ipfsHash),
       tarballed,

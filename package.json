@@ -16,7 +16,9 @@
   },
   "homepage": "https://github.com/likecoin/arweave-uploader#readme",
   "dependencies": {
+    "agentkeepalive": "^4.1.4",
     "arweave": "^1.10.18",
+    "axios": "^0.24.0",
     "csv-parse": "^4.16.3",
     "csv-stringify": "^5.6.5",
     "fast-json-stable-stringify": "^2.1.0",
@@ -30,6 +32,7 @@
     "it-tar": "^4.0.0",
     "it-to-buffer": "^2.0.2",
     "mime-types": "^2.1.33",
+    "node-fetch": "^2.6.5",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {
