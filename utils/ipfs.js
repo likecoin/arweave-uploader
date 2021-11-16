@@ -24,9 +24,9 @@ const ipfs = create({
   }),
 });
 
-async function triggerIPFSGet(ipfsHash) {
+function triggerIPFSGet(ipfsHash) {
   // hacky function to try to speed up ipfs retrieval
-  IPFS_GATEWAY_LIST.map(async (g) => {
+  return IPFS_GATEWAY_LIST.map(async (g) => {
     try { await axios.get(`${g}${ipfsHash}`, { timeout: IPFS_TIMEOUT }); } catch (_) { /* no op */ }
   });
 }
@@ -58,7 +58,7 @@ async function collect(source) {
 async function loadFileFromIPFS(ipfsHash) {
   try {
     console.log(`Querying ${ipfsHash} from IPFS node...`);
-    triggerIPFSGet(ipfsHash);
+    await Promise.all(triggerIPFSGet(ipfsHash));
     const output = await pipe(
       ipfs.get(ipfsHash),
       tarballed,
