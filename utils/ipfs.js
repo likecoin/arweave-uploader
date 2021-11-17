@@ -14,9 +14,17 @@ const IPFS_GATEWAY_LIST = [
   'https://cloudflare-ipfs.com/ipfs/',
 ];
 
-const IPFS_TIMEOUT = 61000; // 1min
+const IPFS_TIMEOUT = 300000; // 5min
 
-const ipfs = create({
+const ipfsQueryClient = create({
+  url: 'https://ipfs.io/api/v0',
+  timeout: IPFS_TIMEOUT,
+  agent: new HttpsAgent({
+    timeout: IPFS_TIMEOUT,
+  }),
+});
+
+const ipfsAddClient = create({
   url: 'https://ipfs.infura.io:5001/api/v0',
   timeout: IPFS_TIMEOUT,
   agent: new HttpsAgent({
@@ -60,7 +68,7 @@ async function loadFileFromIPFS(ipfsHash) {
     console.log(`Querying ${ipfsHash} from IPFS node...`);
     await Promise.all(triggerIPFSGet(ipfsHash));
     const output = await pipe(
-      ipfs.get(ipfsHash),
+      ipfsQueryClient.get(ipfsHash),
       tarballed,
       collect,
     );
@@ -73,7 +81,7 @@ async function loadFileFromIPFS(ipfsHash) {
 
 async function uploadFilesToIPFS(files, { onlyHash = true } = {}) {
   const directoryName = 'tmp';
-  const promises = ipfs.addAll(
+  const promises = ipfsAddClient.addAll(
     files.map((f) => ({
       content: f.buffer,
       path: `/${directoryName}/${f.name}`,
@@ -111,7 +119,6 @@ async function getIPFSHash(files) {
 }
 
 module.exports = {
-  ipfs,
   loadFileFromIPFS,
   getFileIPFSHash,
   getIPFSHash,
