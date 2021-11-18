@@ -30,8 +30,8 @@ const ipfsAddClient = create({
 async function createIPFSClient() {
   // initing local IPFS node..
   const client = await IPFS.create();
-  client.swarm.connect('/ip6/2606:4700:60::6/tcp/4009/p2p/QmcfgsJsMtx6qJb74akCw1M24X1zFwgGo11h1cuhwQjtJP');
-  client.swarm.connect('/ip4/172.65.0.13/tcp/4009/p2p/QmcfgsJsMtx6qJb74akCw1M24X1zFwgGo11h1cuhwQjtJP');
+  await client.swarm.connect('/ip4/172.65.0.13/tcp/4009/p2p/QmcfgsJsMtx6qJb74akCw1M24X1zFwgGo11h1cuhwQjtJP').catch(() => console.error('Cannot connect to cf ipv4'));
+  await client.swarm.connect('/ip6/2606:4700:60::6/tcp/4009/p2p/QmcfgsJsMtx6qJb74akCw1M24X1zFwgGo11h1cuhwQjtJP').catch(() => console.error('Cannot connect to cf ipv6'));
   ipfsQueryClient = client;
 }
 
