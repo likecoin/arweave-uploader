@@ -1,3 +1,4 @@
+const IPFS = require('ipfs-core');
 const { create } = require('ipfs-http-client');
 const { extract } = require('it-tar');
 const { pipe } = require('it-pipe');
@@ -16,13 +17,7 @@ const IPFS_GATEWAY_LIST = [
 
 const IPFS_TIMEOUT = 300000; // 5min
 
-const ipfsQueryClient = create({
-  url: 'https://ipfs.io/api/v0',
-  timeout: IPFS_TIMEOUT,
-  agent: new HttpsAgent({
-    timeout: IPFS_TIMEOUT,
-  }),
-});
+let ipfsQueryClient;
 
 const ipfsAddClient = create({
   url: 'https://ipfs.infura.io:5001/api/v0',
@@ -31,6 +26,14 @@ const ipfsAddClient = create({
     timeout: IPFS_TIMEOUT,
   }),
 });
+
+async function createIPFSClient() {
+  // initing local IPFS node..
+  const client = await IPFS.create();
+  client.swarm.connect('/ip6/2606:4700:60::6/tcp/4009/p2p/QmcfgsJsMtx6qJb74akCw1M24X1zFwgGo11h1cuhwQjtJP');
+  client.swarm.connect('/ip4/172.65.0.13/tcp/4009/p2p/QmcfgsJsMtx6qJb74akCw1M24X1zFwgGo11h1cuhwQjtJP');
+  ipfsQueryClient = client;
+}
 
 function triggerIPFSGet(ipfsHash) {
   // hacky function to try to speed up ipfs retrieval
@@ -65,6 +68,7 @@ async function collect(source) {
 
 async function loadFileFromIPFS(ipfsHash) {
   try {
+    if (!ipfsQueryClient) await createIPFSClient();
     console.log(`Querying ${ipfsHash} from IPFS node...`);
     await Promise.all(triggerIPFSGet(ipfsHash));
     const output = await pipe(
