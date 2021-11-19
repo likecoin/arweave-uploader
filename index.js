@@ -7,7 +7,7 @@ const {
   getMimeAndExt,
   saveToLocal,
 } = require('./utils/file');
-const { loadFileFromIPFS, getIPFSHash } = require('./utils/ipfs');
+const { loadFileFromIPFS, getIPFSHash, shutdownIPFSClient } = require('./utils/ipfs');
 const { getArIdFromIPFSHash, uploadFilesToArweave } = require('./utils/arweave');
 
 const INPUT_FILE_NAME = process.argv[2] || 'list.csv';
@@ -116,6 +116,7 @@ async function run() {
     fs.appendFileSync(OUTPUT_FILE_NAME, stringifyCSV([data]));
   }
   /* eslint-enable no-await-in-loop */
+  await shutdownIPFSClient();
 }
 
 run();
