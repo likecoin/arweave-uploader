@@ -35,6 +35,13 @@ async function createIPFSClient() {
   ipfsQueryClient = client;
 }
 
+async function shutdownIPFSClient() {
+  if (ipfsQueryClient) {
+    await ipfsQueryClient.stop();
+    ipfsQueryClient = null
+  }
+}
+
 function triggerIPFSGet(ipfsHash) {
   // hacky function to try to speed up ipfs retrieval
   return IPFS_GATEWAY_LIST.map(async (g) => {
@@ -126,4 +133,5 @@ module.exports = {
   loadFileFromIPFS,
   getFileIPFSHash,
   getIPFSHash,
+  shutdownIPFSClient,
 };
