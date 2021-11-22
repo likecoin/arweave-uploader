@@ -78,6 +78,7 @@ function saveFileToLocal(file, arId, prefix = '') {
 
 function saveToLocal(files, arId) {
   if (files.length > 1) {
+    // Use parent arId as file prefix, leave id empty to use original filename
     files.map((f) => saveFileToLocal(f, '', arId));
     return arId;
   }
