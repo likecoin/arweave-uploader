@@ -33,7 +33,6 @@
     "it-tar": "^4.0.0",
     "it-to-buffer": "^2.0.2",
     "mime-types": "^2.1.33",
-    "node-fetch": "^2.6.5",
     "uint8arrays": "^3.0.0"
   },
   "devDependencies": {

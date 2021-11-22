@@ -13,7 +13,7 @@ const { getArIdFromIPFSHash, uploadFilesToArweave } = require('./utils/arweave')
 const INPUT_FILE_NAME = process.argv[2] || 'list.csv';
 const OUTPUT_FILE_NAME = `output-${INPUT_FILE_NAME}`;
 
-async function getFileBuffers(filename, ipfsHash) {
+async function getFileBuffers({ filename, ipfsHash }) {
   if (verifyLocalFile(filename)) {
     console.log(`Loading files from local: ${filename}`);
     return loadFileFromLocal(`upload/${filename}`);
@@ -53,7 +53,9 @@ async function handleData(input, { filenameIndex, ipfsHashIndex, arIdIndex }) {
       console.log(`Skip file: ${filename}(${data[ipfsHashIndex]}) has been in Arweave: ${data[arIdIndex]}`);
       return data;
     }
-    let fileList = await getFileBuffers(filename, data[ipfsHashIndex]);
+    let fileList = await getFileBuffers({
+      filename, ipfsHash: data[ipfsHashIndex],
+    });
     const hasLocalFile = verifyLocalFile(filename);
 
     // check IPFS hash for local file
