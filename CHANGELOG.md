@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2]
+### Changed
+- Use local js-ipfs node for fetching IPFS conetnt
+### Added
+- Support IPFS directory download
+- Support Arweave manifest for multi-file directory upload
+
 ## [0.0.1]
 ### Added
 - Initial Release
