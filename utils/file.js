@@ -13,7 +13,8 @@ async function listFiles(filePath) {
 }
 
 async function loadFileFromLocal(filepath) {
-  if (isPathDirectory(filepath)) {
+  const isDir = await isPathDirectory(filepath);
+  if (isDir) {
     const fileList = await listFiles();
     const list = fileList.map((f) => ({
       name: f.replace(filepath, ''),
