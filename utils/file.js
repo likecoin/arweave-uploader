@@ -22,10 +22,10 @@ async function loadFileFromLocal(filepath) {
     }));
     return list;
   }
-  return {
+  return [{
     name: basename(filepath),
     buffer: fs.readFileSync(filepath),
-  };
+  }];
 }
 
 function verifyLocalFile(filename) {
