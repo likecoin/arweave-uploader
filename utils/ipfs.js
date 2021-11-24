@@ -38,7 +38,7 @@ async function createIPFSClient() {
 async function shutdownIPFSClient() {
   if (ipfsQueryClient) {
     await ipfsQueryClient.stop();
-    ipfsQueryClient = null
+    ipfsQueryClient = null;
   }
 }
 

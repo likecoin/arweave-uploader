@@ -13,7 +13,8 @@ async function listFiles(filePath) {
 }
 
 async function loadFileFromLocal(filepath) {
-  if (isPathDirectory(filepath)) {
+  const isDir = await isPathDirectory(filepath);
+  if (isDir) {
     const fileList = await listFiles();
     const list = fileList.map((f) => ({
       name: f.replace(filepath, ''),
@@ -21,10 +22,10 @@ async function loadFileFromLocal(filepath) {
     }));
     return list;
   }
-  return {
+  return [{
     name: basename(filepath),
     buffer: fs.readFileSync(filepath),
-  };
+  }];
 }
 
 function verifyLocalFile(filename) {
