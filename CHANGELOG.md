@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.3]
+### Fixed
+- Fix a bug when loading local files for upload
+
 ## [0.0.2]
 ### Changed
 - Use local js-ipfs node for fetching IPFS conetnt
