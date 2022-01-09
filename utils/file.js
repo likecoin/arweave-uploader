@@ -15,9 +15,12 @@ async function listFiles(filePath) {
 async function loadFileFromLocal(filepath) {
   const isDir = await isPathDirectory(filepath);
   if (isDir) {
-    const fileList = await listFiles();
+    let fileList = await listFiles(filepath);
+    const isDirList = await Promise.all(fileList.map((f) => isPathDirectory(f)));
+    fileList = fileList.filter((_, index) => !isDirList[index]);
+    const replacePath = filepath.endsWith('/') ? filepath : `${filepath}/`;
     const list = fileList.map((f) => ({
-      name: f.replace(filepath, ''),
+      name: f.replace(replacePath, ''),
       buffer: fs.readFileSync(f),
     }));
     return list;
