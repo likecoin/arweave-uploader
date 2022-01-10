@@ -5,7 +5,12 @@ const { getFileIPFSHash } = require('./ipfs');
 
 const jwk = require('../arweave-key.json');
 
-const arweave = Arweave.init({ host: 'arweave.net', port: 443, protocol: 'https' });
+const arweave = Arweave.init({
+  host: 'arweave.net',
+  port: 443,
+  protocol: 'https',
+  timeout: 600000,
+});
 
 const IPFS_KEY = 'IPFS-Add';
 const IPFS_CONSTRAINT_KEY = 'standard';
