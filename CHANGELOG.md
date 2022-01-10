@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.4]
+### Fixed
+- Fix a bug when loading local directories for upload
+
 ## [0.0.3]
 ### Fixed
 - Fix a bug when loading local files for upload

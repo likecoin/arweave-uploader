@@ -1,7 +1,7 @@
 {
   "name": "arweave-uploader",
-  "version": "0.0.3",
-  "description": "",
+  "version": "0.0.4",
+  "description": "Batch upload files from local or IPFS to Arweave",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
