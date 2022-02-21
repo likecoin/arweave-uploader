@@ -79,7 +79,12 @@ async function submitToArweave(file, ipfsHash = null) {
     tx.addTag(IPFS_CONSTRAINT_KEY, IPFS_CONSTRAINT);
   }
   await arweave.transactions.sign(tx, jwk);
-  await arweave.transactions.post(tx);
+  const uploader = await arweave.transactions.getUploader(tx, buffer);
+  while (!uploader.isComplete) {
+    // eslint-disable-next-line no-await-in-loop
+    await uploader.uploadChunk();
+    console.log(`${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
+  }
   return tx.id;
 }
 
