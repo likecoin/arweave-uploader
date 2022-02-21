@@ -101,7 +101,7 @@ async function uploadManifestFile(filesWithId) {
 
 async function uploadFileToArweave(file, ipfsHash) {
   const hash = ipfsHash || await getFileIPFSHash(file);
-  const id = await getArIdFromIPFSHash(ipfsHash);
+  const id = await getArIdFromIPFSHash(hash);
   if (id) return id;
   const res = await submitToArweave(file, hash);
   return res;
