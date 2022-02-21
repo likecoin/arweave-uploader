@@ -117,7 +117,6 @@ async function uploadFileToArweave(file, ipfsHash) {
 }
 
 async function uploadFilesToArweave(files, ipfsHash = null) {
-  console.log(`Uploading ${ipfsHash} to arweave...`);
   if (files.length === 1) {
     return uploadFileToArweave(files[0], ipfsHash);
   }
@@ -144,7 +143,6 @@ async function uploadFilesToArweave(files, ipfsHash = null) {
 }
 
 module.exports = {
-  generateManifestFile,
   getArIdFromIPFSHash,
   uploadFilesToArweave,
 };
