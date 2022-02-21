@@ -123,20 +123,18 @@ async function uploadFilesToArweave(files, ipfsHash = null) {
 
   const ipfsHashes = await Promise.all(files.map((f) => getFileIPFSHash(f)));
   const arweaveIds = await Promise.all(ipfsHashes.map((h) => getArIdFromIPFSHash(h)));
+  let filesWithId = [];
   if (!arweaveIds.some((id) => !id)) {
-    const filesWithId = files.map((f, i) => ({ ...f, arweaveId: arweaveIds[i] }));
-    const { manifest } = await uploadManifestFile(filesWithId);
-    return manifest.arweaveId;
-  }
-
-  const filesWithId = [];
-  for (let i = 0; i < files.length; i += 1) {
-    /* eslint-disable no-await-in-loop */
-    const f = files[i];
-    const hash = await getFileIPFSHash(f);
-    const arweaveId = await submitToArweave(f, hash);
-    filesWithId.push({ ...f, arweaveId });
-    /* eslint-enable no-await-in-loop */
+    filesWithId = files.map((f, i) => ({ ...f, arweaveId: arweaveIds[i] }));
+  } else {
+    for (let i = 0; i < files.length; i += 1) {
+      /* eslint-disable no-await-in-loop */
+      const f = files[i];
+      const hash = ipfsHashes[i];
+      const arweaveId = await submitToArweave(f, hash);
+      filesWithId.push({ ...f, arweaveId });
+      /* eslint-enable no-await-in-loop */
+    }
   }
   const { manifest } = await uploadManifestFile(filesWithId);
   return manifest.arweaveId;
