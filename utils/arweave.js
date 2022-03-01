@@ -92,7 +92,7 @@ async function submitToArweave(file, ipfsHash = null) {
   while (!uploader.isComplete) {
     // eslint-disable-next-line no-await-in-loop
     await uploader.uploadChunk();
-    console.log(`${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
+    console.log(`Uploading ${name} is ${uploader.pctComplete}% complete, ${uploader.uploadedChunks}/${uploader.totalChunks}`);
   }
   return tx.id;
 }
